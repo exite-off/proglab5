@@ -50,12 +50,46 @@ void dfs(const std::string& vertex, std::map<std::string, bool>& visited,
     }
 }
 
+int count_edges_in_component(const std::vector<std::string>& component, const Graph& graph) {
+    int edge_count = 0;
+    for (const auto& vertex : component) {
+        edge_count += graph.edges.at(vertex).size();
+    }
+    return edge_count / 2;
+}
+
+int calculate_result(Graph& graph) {
+    std::map<std::string, bool> visited;
+    int max_component = 0;
+    int max_edges = 0;
+    for (const auto& vertex : graph.vertices) {
+        if (!visited[vertex]) {
+            std::vector<std::string> component;
+            dfs(vertex, visited, graph, component);
+            int component_size = component.size();
+            int edge_count = count_edges_in_component(component, graph);
+            if (component_size > max_component || (component_size == max_component && edge_count > max_edges)) {
+                max_component = component_size;
+                max_edges = edge_count;
+            }
+        }
+    }
+    return max_edges;
+}
+
 int main(int argc, char* argv[]) {
     if (argc < 2) {
-        std::cerr << "Usage: " << argv[0] << " <filepath>" << std::endl;
+        std::cerr << "\nUsage: " << argv[0] << " <filepath>" << std::endl;
         return 0;
     }
-
+    Graph graph;
+    try {
+        read_graph(argv[1], graph);
+    } catch (std::runtime_error& e) {
+        std::cerr << "\nError: " << e.what() << std::endl;
+        return 0;
+    }
+    std::cout << '\n' << calculate_result(graph);
 
     return 0;
 
